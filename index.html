@@ -46,7 +46,6 @@
       background-color: #45a049;
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
   <h1>Cadastro de Ordem de Produção</h1>
@@ -74,9 +73,8 @@
         <th>Início</th>
         <th>Fim</th>
         <th>Expedição</th>
+        <th>Status</th>
         <th>Obs</th>
-        <th>QR Code</th>
-        <th>Ação</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -114,9 +112,9 @@
 
     function exportarCSV() {
       let finalizadas = JSON.parse(localStorage.getItem('ordensFinalizadas')) || [];
-      let csv = "Pedido,Cliente,Artigo,Quantidade,Inicio,Fim,Expedição,Observações\n";
+      let csv = "Pedido,Cliente,Artigo,Quantidade,Inicio,Fim,Expedição,Status,Observações\n";
       finalizadas.forEach(o => {
-        csv += `${o.pedido},${o.cliente},${o.artigo},${o.quantidade},${o.inicio},${o.fim},${o.expedicao},${o.observacoes}\n`;
+        csv += `${o.pedido},${o.cliente},${o.artigo},${o.quantidade},${o.inicio},${o.fim},${o.expedicao},Finalizado,${o.observacoes}\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -140,15 +138,9 @@
           <td>${o.inicio}</td>
           <td>${o.fim}</td>
           <td>${o.expedicao}</td>
-          <td>${o.observacoes}</td>
-          <td><div id="qrcode-${o.id}"></div></td>
           <td><button onclick="finalizarOrdem('${o.id}')">Finalizar</button></td>
+          <td>${o.observacoes}</td>
         `;
-        new QRCode(document.getElementById(`qrcode-${o.id}`), {
-          text: `https://exemplo.com/ordem/${o.id}`,
-          width: 60,
-          height: 60
-        });
       });
     }
 
