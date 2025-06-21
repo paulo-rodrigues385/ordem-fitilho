@@ -1,1 +1,177 @@
 # ordem-fitilho
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Ordens de Produção</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, textarea {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    textarea {
+      grid-column: span 2;
+    }
+    button {
+      padding: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <h1>Cadastro de Ordem de Produção</h1>
+
+  <form id="ordemForm">
+    <input type="number" placeholder="Nº Pedido" name="pedido" required>
+    <input type="text" placeholder="Cliente" name="cliente" required>
+    <input type="text" placeholder="Artigo" name="artigo" required>
+    <input type="number" placeholder="Quantidade (m)" name="quantidade" required>
+    <input type="date" name="inicio" required>
+    <input type="date" name="fim">
+    <input type="date" name="expedicao">
+    <textarea name="observacoes" placeholder="Observações"></textarea>
+    <button type="submit">Cadastrar</button>
+  </form>
+
+  <h2>Ordens Abertas</h2>
+  <table id="tabelaOrdens">
+    <thead>
+      <tr>
+        <th>Nº Pedido</th>
+        <th>Cliente</th>
+        <th>Artigo</th>
+        <th>Qtd (m)</th>
+        <th>Início</th>
+        <th>Fim</th>
+        <th>Expedição</th>
+        <th>Obs</th>
+        <th>QR Code</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="exportarCSV()">Exportar CSV</button>
+
+  <script>
+    const form = document.getElementById('ordemForm');
+    const tabela = document.querySelector('#tabelaOrdens tbody');
+
+    function gerarID() {
+      return 'OP' + Math.floor(Math.random() * 100000);
+    }
+
+    function salvarOrdem(ordem) {
+      let ordens = JSON.parse(localStorage.getItem('ordensAbertas')) || [];
+      ordens.push(ordem);
+      localStorage.setItem('ordensAbertas', JSON.stringify(ordens));
+      mostrarOrdens();
+    }
+
+    function finalizarOrdem(id) {
+      let abertas = JSON.parse(localStorage.getItem('ordensAbertas')) || [];
+      let finalizadas = JSON.parse(localStorage.getItem('ordensFinalizadas')) || [];
+      let index = abertas.findIndex(o => o.id === id);
+      if (index !== -1) {
+        finalizadas.push(abertas[index]);
+        abertas.splice(index, 1);
+        localStorage.setItem('ordensAbertas', JSON.stringify(abertas));
+        localStorage.setItem('ordensFinalizadas', JSON.stringify(finalizadas));
+        mostrarOrdens();
+      }
+    }
+
+    function exportarCSV() {
+      let finalizadas = JSON.parse(localStorage.getItem('ordensFinalizadas')) || [];
+      let csv = "Pedido,Cliente,Artigo,Quantidade,Inicio,Fim,Expedição,Observações\n";
+      finalizadas.forEach(o => {
+        csv += `${o.pedido},${o.cliente},${o.artigo},${o.quantidade},${o.inicio},${o.fim},${o.expedicao},${o.observacoes}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ordens_finalizadas.csv';
+      a.click();
+    }
+
+    function mostrarOrdens() {
+      tabela.innerHTML = '';
+      let ordens = JSON.parse(localStorage.getItem('ordensAbertas')) || [];
+      ordens.forEach(o => {
+        const row = tabela.insertRow();
+        row.innerHTML = `
+          <td>${o.pedido}</td>
+          <td>${o.cliente}</td>
+          <td>${o.artigo}</td>
+          <td>${o.quantidade}</td>
+          <td>${o.inicio}</td>
+          <td>${o.fim}</td>
+          <td>${o.expedicao}</td>
+          <td>${o.observacoes}</td>
+          <td><div id="qrcode-${o.id}"></div></td>
+          <td><button onclick="finalizarOrdem('${o.id}')">Finalizar</button></td>
+        `;
+        new QRCode(document.getElementById(`qrcode-${o.id}`), {
+          text: `https://exemplo.com/ordem/${o.id}`,
+          width: 60,
+          height: 60
+        });
+      });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const dados = new FormData(form);
+      const ordem = {
+        id: gerarID(),
+        pedido: dados.get('pedido'),
+        cliente: dados.get('cliente'),
+        artigo: dados.get('artigo'),
+        quantidade: dados.get('quantidade'),
+        inicio: dados.get('inicio'),
+        fim: dados.get('fim'),
+        expedicao: dados.get('expedicao'),
+        observacoes: dados.get('observacoes')
+      };
+      salvarOrdem(ordem);
+      form.reset();
+    });
+
+    mostrarOrdens();
+  </script>
+</body>
+</html>
