@@ -3,7 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <title>Ordens de Produção</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, textarea {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    textarea {
+      grid-column: span 2;
+    }
+    button {
+      padding: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -103,7 +145,7 @@
           <td><button onclick="finalizarOrdem('${o.id}')">Finalizar</button></td>
         `;
         new QRCode(document.getElementById(`qrcode-${o.id}`), {
-          text: `https://seu-site.com/ordem/${o.id}`,
+          text: `https://exemplo.com/ordem/${o.id}`,
           width: 60,
           height: 60
         });
